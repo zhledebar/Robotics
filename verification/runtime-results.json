@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checks": [
+    "real Linux process startup/version",
+    "product creation and persistence",
+    "Chromium rendered dashboard/configuration dialog; no JavaScript errors",
+    "diagnostic export",
+    "product editing",
+    "exit/restart restores saved data",
+    "product deletion",
+    "clean shutdown"
+  ],
+  "Windows_executed": false,
+  "live_Dell_scan": false
+}

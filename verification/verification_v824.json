@@ -1,0 +1,52 @@
+{
+  "version": "V8.24",
+  "status": "local_validation_passed_Windows_live_pending",
+  "Go": {
+    "passed": 329,
+    "skipped": 1,
+    "failed": 0,
+    "elapsed_seconds": 59.815
+  },
+  "Linux_vet": "PASS",
+  "Windows_amd64_vet": "PASS",
+  "targeted_race_tests": "PASS",
+  "Linux_runtime": {
+    "status": "PASS",
+    "checks": [
+      "real Linux process startup/version",
+      "product creation and persistence",
+      "Chromium rendered dashboard/configuration dialog; no JavaScript errors",
+      "diagnostic export",
+      "product editing",
+      "exit/restart restores saved data",
+      "product deletion",
+      "clean shutdown"
+    ],
+    "Windows_executed": false,
+    "live_Dell_scan": false
+  },
+  "Chromium_core": {
+    "status": "PASS",
+    "browser": "Chromium",
+    "fixture": "local captured DOM with simulated website handlers",
+    "combinations": 40,
+    "trusted_browser_clicks": 63,
+    "hidden_sticky_cart_bound_stock": true,
+    "disabled_or_wrong_offer_rejected": true,
+    "live_Dell_scan": false,
+    "Windows_UIAutomation": false
+  },
+  "screen_traversal_comparison": {
+    "same_baseline_combinations": 40,
+    "v823_screen_clicks": 39,
+    "v824_screen_clicks": 20
+  },
+  "Windows_build": {
+    "bytes": 7434752,
+    "sha256": "33336ff47c77cd81a487cf988fd82dc326d9410a8aab7eb94ab49caad8f8686a",
+    "GUI_subsystem": 2
+  },
+  "Windows_UIAutomation_executed": false,
+  "Windows_PowerShell_cache_executed": false,
+  "live_Dell_scan": false
+}

@@ -1,0 +1,35 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync(__dirname+'/../source/index.html','utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1].split("q('addBtn').onclick")[0];
+const elements={};const element=id=>elements[id]??=( {innerHTML:'',textContent:'',classList:{add(){}}} );
+const env=vm.createContext({URL,document:{getElementById:element}});
+vm.runInContext(script,env);
+const base={url:'https://www.dell.com/en-us/shop/dell-laptops/spd/xps16da16260/da16260_reg_01',id:'xps',name:'XPS 16',dell_family_scan:true,active:true,last_price:300,last_discount:0,last_stock:'缺货'};
+const custom={custom:true,confirmed:true,stock:'有货',price:6000,discount:40,discount_confirmed:true,matched:true,url:base.url};
+const rows=[{...custom,offer_id:'in'},{...custom,offer_id:'out',stock:'缺货'},{...custom,offer_id:'unknown',stock:'未确认'},{...custom,offer_id:'unconfirmed',confirmed:false},{...custom,offer_id:'old',stale:true},{...custom,offer_id:'no-quote',price:0},{...custom,offer_id:'unpublished',discount_confirmed:false,matched:false},{offer_id:'fixed-out',custom:false,confirmed:true,price:300,stock:'缺货',url:base.url}];
+env.product={...base,dell_results:rows};
+assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(modelRows(product).map(x=>x.offer_id))',env)),['in','unpublished','fixed-out']);
+assert(vm.runInContext('modelSummary(product)',env).includes('预配置 1 / 有货定制 2 / 符合 1'));
+assert(vm.runInContext('discountSummary(product)',env).includes('定制：40.0%'));
+vm.runInContext('P=[product];render()',env);
+assert(element('rows').innerHTML.includes('有货定制 2'));
+assert(element('rows').innerHTML.includes('定制折扣符合 1 / 全部符合 1'));
+assert(element('rows').innerHTML.includes('有货定制仅看折扣'));
+// Supply unfiltered detail data to verify defensive filtering in the actual dialog.
+env.results=rows;vm.runInContext('api=async()=>({json:async()=>results})',env);
+(async()=>{
+ await vm.runInContext("dellView('xps')",env);
+ const table=element('dr').innerHTML;
+ assert(table.includes('>in<')&&table.includes('>unpublished<')&&table.includes('>fixed-out<'));
+ for(const id of ['out','unknown','unconfirmed','old','no-quote'])assert(!table.includes('>'+id+'<'));
+ assert(table.includes('折扣待公布'));
+ env.product={...base,dell_results:[...rows,{...custom,custom:false,offer_id:'BYO-legacy',source:'BYO 已核价',stale:true}],stale:true};
+ assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(modelRows(product).map(x=>x.offer_id))',env)),['fixed-out']);
+ env.product={...base,dell_results:rows.filter(x=>x.custom&&x.stock!=='有货')};
+ vm.runInContext('P=[product]',env);env.results=env.product.dell_results;
+ await vm.runInContext("dellView('xps')",env);assert(element('dr').innerHTML.includes('暂无可显示结果'));
+ env.product={...base,url:'https://www.lenovo.com/us/vipmembers/perksoffer/en/p/test/len123',lenovo_results:[{...custom,offer_id:'cto',stock:'未确认',confirmed:false}]};
+ assert.equal(vm.runInContext('modelRows(product).length',env),1);
+ const report={legacy_BYO_hidden:true,status:'PASS',version:'V8.24',cases:['availability matrix','dashboard counts','discount unpublished visible','detail dialog filtering','stale custom hidden','empty message','Lenovo unchanged'],actual_browser_run:false};
+ fs.writeFileSync(__dirname+'/display_v824.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -1,0 +1,2 @@
+cb8b078c3b4f6290928a20cfb260284f5af6992a4e32a47bb3e3710490775b96  PriceStockMonitor_Source_V8.24.zip
+b7659f1dbc3a7d86e520db56dd6a480960a2616b930b0bdb4617537d840067ce  PriceStockMonitor_Win64_V8.24.zip

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "browser": "Chromium",
+  "fixture": "local captured DOM with simulated website handlers",
+  "combinations": 40,
+  "trusted_browser_clicks": 63,
+  "hidden_sticky_cart_bound_stock": true,
+  "disabled_or_wrong_offer_rejected": true,
+  "live_Dell_scan": false,
+  "Windows_UIAutomation": false
+}
