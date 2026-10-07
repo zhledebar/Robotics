@@ -97,9 +97,9 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rows, partial, cursor, err := b.scanRepresentativeCore(ctx, initial, r, 0, func(string) {})
-	if err != nil || partial || len(rows) < 2 || len(rows) > 7 || cursor == 0 {
-		t.Fatalf("rows=%d partial=%v cursor=%d err=%v", len(rows), partial, cursor, err)
+	rows, partial, cursor, more, err := b.scanRepresentativeCore(ctx, initial, r, 0, func(string) {})
+	if err != nil || partial || len(rows) != 2 || cursor == 0 || !more {
+		t.Fatalf("rows=%d partial=%v cursor=%d more=%t err=%v", len(rows), partial, cursor, more, err)
 	}
 	raw, err := c.eval(ctx, `JSON.stringify({selections:window.selectionClicks,confirmations:window.confirmationClicks,coupled:window.coupledChanges})`)
 	if err != nil {
@@ -109,7 +109,7 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 	if err = json.Unmarshal([]byte(raw), &stats); err != nil {
 		t.Fatal(err)
 	}
-	if stats.Selections > 6 || stats.Confirmations != stats.Selections || stats.Coupled == 0 {
+	if stats.Selections != 1 || stats.Confirmations != stats.Selections || stats.Coupled == 0 {
 		t.Fatalf("popup handling failed: %s", raw)
 	}
 	seen := map[string]bool{}
@@ -119,5 +119,5 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 		}
 		seen[row.OfferID] = true
 	}
-	t.Logf("production traversal + Chromium: actual_rows=%d selected=%d accepted_popups=%d coupled_changes=%d", len(rows), stats.Selections, stats.Confirmations, stats.Coupled)
+	t.Logf("production traversal + Chromium: actual_rows=%d selected=%d accepted_popups=%d coupled_changes=%d pending_more=%t", len(rows), stats.Selections, stats.Confirmations, stats.Coupled, more)
 }

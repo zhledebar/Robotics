@@ -572,12 +572,14 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 		})
 		var rows []DellResult
 		var partial bool
+		var corePending bool
 		var err error
 		if p.DellScanMode == "full" {
 			rows, partial, err = b.scanCustomCore(scanCtx, *customPage, r, progress)
 			out.ScanScope = "full"
 		} else {
-			rows, partial, out.ScanCursor, err = b.scanRepresentativeCore(scanCtx, *customPage, r, p.DellScanCursor, progress)
+			rows, partial, out.ScanCursor, corePending, err = b.scanRepresentativeCore(scanCtx, *customPage, r, p.DellScanCursor, progress)
+			out.CorePending = corePending
 			out.ScanScope = "representative"
 			out.Parser = "普通浏览器：代表性实际配置（未穷举，分轮检查）"
 		}

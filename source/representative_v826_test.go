@@ -21,9 +21,9 @@ func TestRepresentativeScanRecordsCoupledActualStateAndBoundsSelections(t *testi
 	}
 	// Start at the 64GB target. Accepting it changes the CPU and RAM in this
 	// fixture; record what Dell actually selected instead of restoring CPU C.
-	rows, _, cursor, err := b.scanRepresentativeCore(context.Background(), m.page(), nativeRequest{Handle: 99, URL: liveXPSURL, Family: true}, 7, func(string) {})
-	if selects > representativeSelectionLimit || cursor <= 7 || len(rows) > representativeSelectionLimit+1 {
-		t.Fatalf("unbounded scan: selects=%d rows=%d cursor=%d err=%v", selects, len(rows), cursor, err)
+	rows, _, cursor, more, err := b.scanRepresentativeCore(context.Background(), m.page(), nativeRequest{Handle: 99, URL: liveXPSURL, Family: true}, 7, func(string) {})
+	if selects > representativeSelectionLimit || selects != 1 || cursor <= 7 || len(rows) > representativeSelectionLimit+1 || !more {
+		t.Fatalf("scan failed to yield after one transition: selects=%d rows=%d cursor=%d more=%t err=%v", selects, len(rows), cursor, more, err)
 	}
 	seen := map[string]bool{}
 	for _, row := range rows {
@@ -54,7 +54,7 @@ func TestRepresentativeCursorChangesNextPassTargets(t *testing.T) {
 			}
 			return m.call(ctx, r)
 		}
-		_, _, _, _ = b.scanRepresentativeCore(context.Background(), m.page(), nativeRequest{Handle: 99, URL: liveXPSURL, Family: true}, pass*6, func(string) {})
+		_, _, _, _, _ = b.scanRepresentativeCore(context.Background(), m.page(), nativeRequest{Handle: 99, URL: liveXPSURL, Family: true}, pass, func(string) {})
 	}
 	if len(first) != 2 || first[0] == first[1] {
 		t.Fatalf("same targets repeated: %v", first)
@@ -76,7 +76,6 @@ func TestAllQuotesCommitBeforeSlowCorePassStarts(t *testing.T) {
 	releaseQuotes := make(chan struct{})
 	releaseCore := make(chan struct{})
 	coreStarted := make(chan string, 2)
-	defer close(releaseCore)
 	var mu sync.Mutex
 	var sequence []string
 	a.fetch = func(ctx context.Context, p Product, progress func(string)) (Observation, error) {
@@ -113,7 +112,7 @@ func TestAllQuotesCommitBeforeSlowCorePassStarts(t *testing.T) {
 		if p.ID == "pro" {
 			price = 1500
 		}
-		return Observation{Price: price, Stock: stockIn, ScanScope: phase, Results: []DellResult{{OfferID: p.ID + "-fixed", Price: price, Confirmed: true, Stock: stockIn}}}, nil
+		return Observation{Price: price, Stock: stockIn, ScanScope: phase, CorePending: p.corePhase, Results: []DellResult{{OfferID: p.ID + "-fixed", Price: price, Confirmed: true, Stock: stockIn}}}, nil
 	}
 	if !a.schedule(xps.ID) || !a.schedule(pro.ID) {
 		t.Fatal("quotes not scheduled")
@@ -131,9 +130,44 @@ func TestAllQuotesCommitBeforeSlowCorePassStarts(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("core phase never started")
 	}
+	// Make Pro due while the first slow configuration transition is running.
+	// Completion must leave the pending XPS transition queued so the scheduler
+	// can run Pro's quote first.
+	a.mu.Lock()
+	pro.nextCheck = time.Now().Add(-time.Second)
+	a.mu.Unlock()
+	close(releaseCore)
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		a.mu.RLock()
+		finished := !xps.Checking
+		pending := xps.CorePending
+		a.mu.RUnlock()
+		if finished && pending {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+	a.mu.RLock()
+	if !xps.CorePending {
+		a.mu.RUnlock()
+		t.Fatal("unfinished representative work was not queued")
+	}
+	a.mu.RUnlock()
+	if !a.schedule(pro.ID) {
+		t.Fatal("due Dell Pro quote was not scheduled")
+	}
+	select {
+	case id := <-started:
+		if id != pro.ID {
+			t.Fatalf("unexpected quote scheduled before next core slice: %s", id)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("Dell Pro quote did not run between core slices")
+	}
 	mu.Lock()
 	defer mu.Unlock()
-	if len(sequence) < 3 || sequence[0][len(sequence[0])-5:] != "quote" || sequence[1][len(sequence[1])-5:] != "quote" {
+	if len(sequence) < 4 || sequence[0][len(sequence[0])-5:] != "quote" || sequence[1][len(sequence[1])-5:] != "quote" || sequence[2] != "xps:core" || sequence[3] != "pro:quote" {
 		t.Fatalf("unexpected phase order: %v", sequence)
 	}
 }

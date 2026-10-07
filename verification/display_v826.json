@@ -1,0 +1,15 @@
+{
+  "legacy_BYO_hidden": true,
+  "status": "PASS",
+  "version": "V8.26",
+  "cases": [
+    "availability matrix",
+    "dashboard counts",
+    "discount unpublished visible",
+    "detail dialog filtering",
+    "stale custom hidden",
+    "empty message",
+    "Lenovo unchanged"
+  ],
+  "actual_browser_run": false
+}

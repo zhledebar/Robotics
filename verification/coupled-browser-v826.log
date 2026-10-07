@@ -1,0 +1,8 @@
+=== RUN   TestChromiumCoupledRepresentativeTraversal
+2026/10/07 12:24:59 owned core click prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN wanted-name="Series 3 Intel® Core™ Ultra 5 Processor 325 (8 cores, 12MB Cache, up to 4.5 GHz). – $100.00" selected-ids=["PJ3K2R-NW5YP2"] already=false point=&{X:600 Y:450.09375}
+2026/10/07 12:24:59 owned core browser click dispatched: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN; actual selection still requires snapshot verification
+2026/10/07 12:24:59 owned configuration confirmation prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN selected-ids=["PJ3K2R-NW5YP2"] modal=fixture-modal-1 button=selection-modal-change-btn label="Accept"
+2026/10/07 12:24:59 owned configuration confirmation dispatched: action=select wanted-id=PJ3K2R-RGMYFN modal=fixture-modal-1; selection and current quote must still be verified
+2026/10/07 12:24:59 representative core finished: rows=2 transitions=1 unresolved=0 more=true next-cursor=1
+    coupled_browser_v826_test.go:122: production traversal + Chromium: actual_rows=2 selected=1 accepted_popups=1 coupled_changes=1 pending_more=true
+--- PASS: TestChromiumCoupledRepresentativeTraversal (1.77s)

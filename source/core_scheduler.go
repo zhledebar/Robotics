@@ -35,7 +35,16 @@ func (a *App) dispatchPendingCore() {
 		a.scheduleWith(id, func(ctx context.Context, p Product, progress func(string)) (Observation, error) {
 			p.corePhase = true
 			progress("各商品报价已更新；检查代表配置")
-			return a.fetch(ctx, p, progress)
+			o, err := a.fetch(ctx, p, progress)
+			if err == nil && o.CorePending && ctx.Err() == nil {
+				a.mu.Lock()
+				if current := a.findLocked(p.ID); current != nil && current.revision == p.revision {
+					a.corePending[p.ID] = p.revision
+					current.CorePending = true
+				}
+				a.mu.Unlock()
+			}
+			return o, err
 		})
 	}
 }

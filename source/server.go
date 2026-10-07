@@ -40,7 +40,7 @@ func (a *App) handler() http.Handler {
 	})
 	mux.HandleFunc("/api/diagnostics", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.25.txt"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.26.txt"`)
 		w.Header().Set("Cache-Control", "no-store")
 		fmt.Fprintf(w, "商品监控诊断 %s\n导出时间：%s\n\n", version, stamp())
 		a.mu.RLock()
@@ -79,7 +79,7 @@ func (a *App) handler() http.Handler {
 		meta, _ := json.MarshalIndent(checks, "", "  ")
 		a.mu.RUnlock()
 		fmt.Fprintf(w, "当前检查状态：\n%s\n\n本次版本日志（末尾最多2 MiB）：\n", meta)
-		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v825.log"))
+		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v826.log"))
 		if err != nil {
 			fmt.Fprintln(w, "本次运行尚无可读取日志。请完成一次检查后再次下载诊断。")
 			return

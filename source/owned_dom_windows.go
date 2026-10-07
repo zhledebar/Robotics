@@ -15,7 +15,7 @@ import (
 
 func ownedDOMProfile(r nativeRequest) string {
 	// Nonce from our window slot isolates this browser from all previous runs.
-	return filepath.Join(os.Getenv("LOCALAPPDATA"), "PriceStockMonitor", "background_browser_v825", r.Owner, strings.TrimSuffix(filepath.Base(r.EXE), ".exe"))
+	return filepath.Join(os.Getenv("LOCALAPPDATA"), "PriceStockMonitor", "background_browser_v826", r.Owner, strings.TrimSuffix(filepath.Base(r.EXE), ".exe"))
 }
 
 func runNativeReader(ctx context.Context, r nativeRequest) (nativePage, error) {
@@ -25,7 +25,7 @@ func runNativeReader(ctx context.Context, r nativeRequest) (nativePage, error) {
 			if _, decodeErr := hex.DecodeString(r.Owner); decodeErr == nil {
 				// Finalized closure has confirmed the owned processes have exited.
 				// Remove only this application's nonce-scoped temporary profile.
-				dir := filepath.Join(os.Getenv("LOCALAPPDATA"), "PriceStockMonitor", "background_browser_v825", r.Owner)
+				dir := filepath.Join(os.Getenv("LOCALAPPDATA"), "PriceStockMonitor", "background_browser_v826", r.Owner)
 				if cleanupErr := os.RemoveAll(dir); cleanupErr != nil {
 					log.Printf("temporary collector profile cleanup: %v", cleanupErr)
 				}

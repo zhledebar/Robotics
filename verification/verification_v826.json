@@ -1,0 +1,53 @@
+{
+  "version": "8.26",
+  "based_on_user_diagnostic": "V8.25 XPS representative pass held the shared collector across six selections; Dell Pro next due quote ran after the pass",
+  "go_tests": {
+    "passed": 334,
+    "skipped": 1,
+    "failed": 0,
+    "chromium_integration_executed": true
+  },
+  "race_focused": "PASS",
+  "go_vet": {
+    "linux": "PASS",
+    "windows_amd64": "PASS"
+  },
+  "windows_build": {
+    "arch": "amd64",
+    "subsystem": "GUI",
+    "sha256": "ca30a838d5a5c153a8ea69c790bb48710e123712b1020b077d5bdb74eacf3fc4",
+    "bytes": 7469568
+  },
+  "node_suites": 3,
+  "chromium_coupled_model": {
+    "actual_rows": 2,
+    "selections": 1,
+    "accepted_popups": 1,
+    "coupled_changes": 1,
+    "live_website": false
+  },
+  "quote_scheduler_regression": "PASS: a due Pro quote is scheduled between XPS representative transitions",
+  "runtime": {
+    "status": "PASS",
+    "checks": [
+      "real Linux process startup/version",
+      "product creation and persistence",
+      "Chromium rendered dashboard/configuration dialog; no JavaScript errors",
+      "real browser quick/full mode editing and API persistence",
+      "diagnostic export",
+      "product editing",
+      "exit/restart restores saved data",
+      "product deletion",
+      "clean shutdown"
+    ],
+    "Windows_executed": false,
+    "live_Dell_scan": false
+  },
+  "windows_execution": false,
+  "live_Dell_scan": false,
+  "limitations": [
+    "Representative mode does not enumerate all options/combinations",
+    "Windows UIAutomation and PowerShell were not executed",
+    "Live Dell page request blocked by cloud proxy"
+  ]
+}

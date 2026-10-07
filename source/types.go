@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const version = "V8.25"
+const version = "V8.26"
 const stockIn = "有货"
 const stockOut = "缺货"
 const stockUnknown = "未确认"
@@ -147,6 +147,7 @@ type Alert struct {
 type Observation struct {
 	ScanScope      string
 	ScanCursor     int
+	CorePending    bool
 	VerifiedNative bool
 
 	Price    float64

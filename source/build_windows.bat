@@ -11,6 +11,6 @@ if errorlevel 1 exit /b 1
 set GOOS=windows
 set GOARCH=amd64
 set CGO_ENABLED=0
-go build -buildvcs=false -trimpath -ldflags "-H=windowsgui -s -w" -o "..\PriceStockMonitor_Win64_V8.25.exe" .
+go build -buildvcs=false -trimpath -ldflags "-H=windowsgui -s -w" -o "..\PriceStockMonitor_Win64_V8.26.exe" .
 if errorlevel 1 exit /b 1
-echo Built PriceStockMonitor_Win64_V8.25.exe
+echo Built PriceStockMonitor_Win64_V8.26.exe

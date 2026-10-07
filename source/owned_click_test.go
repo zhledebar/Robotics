@@ -183,7 +183,7 @@ func TestDiagnosticDownloadIncludesCurrentSelectionFailureAndBoundedLog(t *testi
 	p.LastError = "核心选项切换未确认（处理器）"
 	a.store.Products = append(a.store.Products, p)
 	log := strings.Repeat("x", 2*1024*1024+100) + "\nowned core click wanted-id=CPU-B selected-ids=CPU-A\n"
-	if err := os.WriteFile(filepath.Join(filepath.Dir(a.file), "app_v825.log"), []byte(log), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(filepath.Dir(a.file), "app_v826.log"), []byte(log), 0600); err != nil {
 		t.Fatal(err)
 	}
 	req := httptest.NewRequest("GET", "http://127.0.0.1:38840/api/diagnostics", nil)

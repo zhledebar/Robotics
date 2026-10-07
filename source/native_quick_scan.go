@@ -9,7 +9,9 @@ import (
 	"time"
 )
 
-const representativeSelectionLimit = 6
+// Yield after one real option change so the scheduler can service any product
+// whose quote interval has expired before the next representative transition.
+const representativeSelectionLimit = 1
 const representativeTimeBudget = 60 * time.Second
 
 type coreTarget struct{ group, id, key string }
@@ -17,13 +19,13 @@ type coreTarget struct{ group, id, key string }
 // Check actual one-step transitions, not the Cartesian product. Dell may
 // change CPU/GPU/RAM together: record the complete resulting state, without
 // restoring an imagined parent combination or computing a price from deltas.
-func (b *NormalBrowser) scanRepresentativeCore(ctx context.Context, page nativePage, r nativeRequest, cursor int, progress func(string)) ([]DellResult, bool, int, error) {
+func (b *NormalBrowser) scanRepresentativeCore(ctx context.Context, page nativePage, r nativeRequest, cursor int, progress func(string)) ([]DellResult, bool, int, bool, error) {
 	o, err := nativeObservation(page, r.URL, true)
 	if err != nil {
-		return nil, true, cursor, err
+		return nil, true, cursor, false, err
 	}
 	if len(o.Results) != 1 {
-		return nil, true, cursor, &nativeQuoteFailure{Reason: "当前定制报价不唯一"}
+		return nil, true, cursor, false, &nativeQuoteFailure{Reason: "当前定制报价不唯一"}
 	}
 	rows := append([]DellResult(nil), o.Results...)
 	index := map[string]int{rows[0].OfferID: 0}
@@ -56,7 +58,7 @@ func (b *NormalBrowser) scanRepresentativeCore(ctx context.Context, page nativeP
 	addTargets(page)
 	if len(targets) == 0 {
 		progress("当前定制已核对；没有其他可选核心选项")
-		return rows, false, cursor, nil
+		return rows, false, cursor, false, nil
 	}
 	if cursor < 0 {
 		cursor = 0
@@ -119,7 +121,7 @@ func (b *NormalBrowser) scanRepresentativeCore(ctx context.Context, page nativeP
 		selectReq.GroupID = target.group
 		selectReq.OptionID = choice.ID
 		selectReq.OptionName = choice.Name
-		progress(fmt.Sprintf("代表配置检查 %d/%d；联动后按实际选中配置核价，未穷举", attempts, representativeSelectionLimit))
+		progress("代表配置检查 1/1；本次切换后让其他到期商品先更新报价")
 		next, e := b.request(work, selectReq)
 		if e == nil {
 			next, e = b.stableWhen(work, next, selectReq, func(p nativePage) bool {
@@ -192,7 +194,8 @@ func (b *NormalBrowser) scanRepresentativeCore(ctx context.Context, page nativeP
 	if failures > 0 && lastErr == nil {
 		lastErr = &nativeQuoteFailure{Reason: fmt.Sprintf("已核对 %d 个代表配置；%d 次选项切换未确认，未把旧配置当作成功", len(rows), failures)}
 	}
-	progress(fmt.Sprintf("代表配置已核对 %d 项；其他选项分轮检查，未穷举", len(rows)))
-	log.Printf("representative core finished: rows=%d transitions=%d unresolved=%d next-cursor=%d", len(rows), attempts, failures, cursor+positions)
-	return rows, lastErr != nil, cursor + positions, lastErr
+	more := lastErr == nil && positions < len(targets)
+	progress(fmt.Sprintf("代表配置已核对 %d 项；%s", len(rows), map[bool]string{true: "已让出窗口，其他到期商品优先", false: "本轮代表配置检查结束"}[more]))
+	log.Printf("representative core finished: rows=%d transitions=%d unresolved=%d more=%t next-cursor=%d", len(rows), attempts, failures, more, cursor+positions)
+	return rows, lastErr != nil, cursor + positions, more, lastErr
 }
