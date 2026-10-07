@@ -40,7 +40,7 @@ func (a *App) handler() http.Handler {
 	})
 	mux.HandleFunc("/api/diagnostics", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.24.txt"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.25.txt"`)
 		w.Header().Set("Cache-Control", "no-store")
 		fmt.Fprintf(w, "商品监控诊断 %s\n导出时间：%s\n\n", version, stamp())
 		a.mu.RLock()
@@ -74,12 +74,12 @@ func (a *App) handler() http.Handler {
 					}
 				}
 			}
-			checks = append(checks, map[string]any{"name": p.Name, "last_checked": p.LastChecked, "stage": p.CheckState, "last_error": p.LastError, "needs_action": p.NeedsAction, "scan_incomplete": p.ScanIncomplete, "stale": p.Stale, "dell_custom_visible": visibleCustom, "dell_custom_hidden": hiddenCustom, "dell_custom_hidden_reasons": hiddenReasons, "dell_custom_rows": customRows})
+			checks = append(checks, map[string]any{"name": p.Name, "last_checked": p.LastChecked, "stage": p.CheckState, "last_error": p.LastError, "needs_action": p.NeedsAction, "scan_incomplete": p.ScanIncomplete, "stale": p.Stale, "dell_custom_visible": visibleCustom, "dell_custom_hidden": hiddenCustom, "dell_custom_hidden_reasons": hiddenReasons, "dell_custom_rows": customRows, "scan_scope": p.ScanScope, "core_pending": p.CorePending, "dell_scan_mode": p.DellScanMode, "next_scan_cursor": p.DellScanCursor})
 		}
 		meta, _ := json.MarshalIndent(checks, "", "  ")
 		a.mu.RUnlock()
 		fmt.Fprintf(w, "当前检查状态：\n%s\n\n本次版本日志（末尾最多2 MiB）：\n", meta)
-		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v824.log"))
+		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v825.log"))
 		if err != nil {
 			fmt.Fprintln(w, "本次运行尚无可读取日志。请完成一次检查后再次下载诊断。")
 			return
@@ -114,6 +114,13 @@ func (a *App) handler() http.Handler {
 			return
 		}
 		p.Name = strings.TrimSpace(p.Name)
+		if p.DellScanMode == "" {
+			p.DellScanMode = "quick"
+		}
+		if p.DellScanMode != "quick" && p.DellScanMode != "full" {
+			http.Error(w, "Dell检查方式无效", 400)
+			return
+		}
 		p.URL = strings.TrimSpace(p.URL)
 		p.BrowserFeed = false        // no extension setup is accepted or required
 		p.CustomDiscountOnly = false // accept old clients, but never exclude ordinary offers
@@ -135,6 +142,7 @@ func (a *App) handler() http.Handler {
 		}
 		a.mu.Lock()
 		if p.ID == "" {
+			p.DellScanCursor = 0
 			p.ID = newID()
 			p.revision = 1
 			p.nextCheck = time.Now()
@@ -145,7 +153,7 @@ func (a *App) handler() http.Handler {
 				cancel()
 				delete(a.cancels, p.ID)
 			}
-			changed := old.URL != p.URL || old.DellFamilyScan != p.DellFamilyScan
+			changed := old.URL != p.URL || old.DellFamilyScan != p.DellFamilyScan || old.DellScanMode != p.DellScanMode
 			modeChanged := old.CustomDiscountOnly != p.CustomDiscountOnly
 			old.Name = p.Name
 			old.URL = p.URL
@@ -160,6 +168,9 @@ func (a *App) handler() http.Handler {
 			old.AlertOnPriceDrop = p.AlertOnPriceDrop
 			old.Active = p.Active
 			old.DellFamilyScan = p.DellFamilyScan
+			old.DellScanMode = p.DellScanMode
+			old.CorePending = false
+			delete(a.corePending, p.ID)
 			old.revision++
 			old.Checking = false
 			old.CheckState = ""
@@ -168,6 +179,8 @@ func (a *App) handler() http.Handler {
 				markStale(old)
 			}
 			if changed {
+				old.DellScanCursor = 0
+				old.ScanScope = ""
 				old.NeedsAction = ""
 				old.ScanIncomplete = false
 				old.LastTrusted = false
@@ -204,6 +217,7 @@ func (a *App) handler() http.Handler {
 	mux.HandleFunc("/api/delete", func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		a.mu.Lock()
+		delete(a.corePending, id)
 		found := false
 		for i, p := range a.store.Products {
 			if p.ID == id {

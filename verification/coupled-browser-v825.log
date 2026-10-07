@@ -1,0 +1,40 @@
+=== RUN   TestChromiumCoupledRepresentativeTraversal
+2026/10/07 11:10:42 owned core click prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN wanted-name="Series 3 Intel® Core™ Ultra 5 Processor 325 (8 cores, 12MB Cache, up to 4.5 GHz). – $100.00" selected-ids=["PJ3K2R-NW5YP2"] already=false point=&{X:600 Y:450.09375}
+2026/10/07 11:10:42 owned core browser click dispatched: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN; actual selection still requires snapshot verification
+2026/10/07 11:10:42 owned configuration confirmation prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-RGMYFN selected-ids=["PJ3K2R-NW5YP2"] modal=fixture-modal-1 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:42 owned configuration confirmation dispatched: action=select wanted-id=PJ3K2R-RGMYFN modal=fixture-modal-1; selection and current quote must still be verified
+2026/10/07 11:10:42 owned core click prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-MTTJ8X wanted-name="Series 3 Intel® Core™ Ultra 7 Processor 366H (16 cores, 18MB Cache, up to 4.8 GHz). + $100.00" selected-ids=["PJ3K2R-RGMYFN"] already=false point=&{X:600 Y:450.09375}
+2026/10/07 11:10:42 owned core browser click dispatched: action=select group=modulePJ3K2R wanted-id=PJ3K2R-MTTJ8X; actual selection still requires snapshot verification
+2026/10/07 11:10:42 owned configuration confirmation prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-MTTJ8X selected-ids=["PJ3K2R-RGMYFN"] modal=fixture-modal-2 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:42 owned configuration confirmation dispatched: action=select wanted-id=PJ3K2R-MTTJ8X modal=fixture-modal-2; selection and current quote must still be verified
+2026/10/07 11:10:42 owned core click prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-4X26RD wanted-name="Series 3 Intel® Core™ Ultra X7 Processor 358H (16 cores, 18MB Cache, up to 4.8 GHz). + $100.00" selected-ids=["PJ3K2R-MTTJ8X"] already=false point=&{X:600 Y:450.09375}
+2026/10/07 11:10:42 owned core browser click dispatched: action=select group=modulePJ3K2R wanted-id=PJ3K2R-4X26RD; actual selection still requires snapshot verification
+2026/10/07 11:10:42 owned configuration confirmation prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-4X26RD selected-ids=["PJ3K2R-MTTJ8X"] modal=fixture-modal-3 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:42 owned configuration confirmation dispatched: action=select wanted-id=PJ3K2R-4X26RD modal=fixture-modal-3; selection and current quote must still be verified
+2026/10/07 11:10:42 owned core click prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-WMWN03 wanted-name="Series 3 Intel® Core™ Ultra X9 Processor 388H (16 cores, 18MB Cache, up to 5.1 GHz). + $100.00" selected-ids=["PJ3K2R-4X26RD"] already=false point=&{X:600 Y:450.09375}
+2026/10/07 11:10:42 owned core browser click dispatched: action=select group=modulePJ3K2R wanted-id=PJ3K2R-WMWN03; actual selection still requires snapshot verification
+2026/10/07 11:10:43 owned configuration confirmation prepared: action=select group=modulePJ3K2R wanted-id=PJ3K2R-WMWN03 selected-ids=["PJ3K2R-4X26RD"] modal=fixture-modal-4 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:43 owned configuration confirmation dispatched: action=select wanted-id=PJ3K2R-WMWN03 modal=fixture-modal-4; selection and current quote must still be verified
+2026/10/07 11:10:43 owned core click prepared: action=select group=moduleR75JGN wanted-id=R75JGN-M43455 wanted-name="1TB M.2 2230 SSD Gen4x4 TLC. + $250.00" selected-ids=["R75JGN-KWWRY6"] already=false point=&{X:600 Y:450.03125}
+2026/10/07 11:10:43 owned core browser click dispatched: action=select group=moduleR75JGN wanted-id=R75JGN-M43455; actual selection still requires snapshot verification
+2026/10/07 11:10:43 owned configuration confirmation prepared: action=select group=moduleR75JGN wanted-id=R75JGN-M43455 selected-ids=["R75JGN-KWWRY6"] modal=fixture-modal-5 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:43 owned configuration confirmation dispatched: action=select wanted-id=R75JGN-M43455 modal=fixture-modal-5; selection and current quote must still be verified
+2026/10/07 11:10:43 owned core click prepared: action=select group=moduleR75JGN wanted-id=R75JGN-281W8T wanted-name="2TB M.2 2280 SSD with DRAM Gen5x4 TLC SED. + $100.00" selected-ids=["R75JGN-M43455"] already=false point=&{X:600 Y:450.03125}
+2026/10/07 11:10:43 owned core browser click dispatched: action=select group=moduleR75JGN wanted-id=R75JGN-281W8T; actual selection still requires snapshot verification
+2026/10/07 11:10:43 owned configuration confirmation prepared: action=select group=moduleR75JGN wanted-id=R75JGN-281W8T selected-ids=["R75JGN-M43455"] modal=fixture-modal-6 button=selection-modal-change-btn label="Accept"
+2026/10/07 11:10:43 owned configuration confirmation dispatched: action=select wanted-id=R75JGN-281W8T modal=fixture-modal-6; selection and current quote must still be verified
+2026/10/07 11:10:43 representative core finished: rows=7 transitions=6 unresolved=0 next-cursor=6
+    coupled_browser_v825_test.go:122: production traversal + Chromium: actual_rows=7 selected=6 accepted_popups=6 coupled_changes=4
+--- PASS: TestChromiumCoupledRepresentativeTraversal (1.58s)
+=== RUN   TestRepresentativeScanRecordsCoupledActualStateAndBoundsSelections
+2026/10/07 11:10:43 representative core finished: rows=7 transitions=6 unresolved=0 next-cursor=13
+--- PASS: TestRepresentativeScanRecordsCoupledActualStateAndBoundsSelections (0.01s)
+=== RUN   TestRepresentativeCursorChangesNextPassTargets
+2026/10/07 11:10:43 representative core finished: rows=7 transitions=6 unresolved=0 next-cursor=6
+2026/10/07 11:10:43 representative core finished: rows=7 transitions=6 unresolved=0 next-cursor=12
+--- PASS: TestRepresentativeCursorChangesNextPassTargets (0.02s)
+=== RUN   TestAllQuotesCommitBeforeSlowCorePassStarts
+2026/10/07 11:10:43 check xps failed: context canceled
+--- PASS: TestAllQuotesCommitBeforeSlowCorePassStarts (0.00s)
+PASS
+ok  	pricestockmonitor	1.616s

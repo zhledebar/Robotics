@@ -1,0 +1,48 @@
+{
+  "version": "8.25",
+  "go_tests": {
+    "passed": 333,
+    "skipped": 1,
+    "failed": 0,
+    "production_chromium_test_executed": true
+  },
+  "race_focused": "PASS",
+  "vet_linux_windows": "PASS",
+  "node_suites": 3,
+  "chromium_coupled_model": {
+    "actual_rows": 7,
+    "selections": 6,
+    "accepted_popups": 6,
+    "coupled_changes": 4,
+    "live_website": false
+  },
+  "runtime": {
+    "status": "PASS",
+    "checks": [
+      "real Linux process startup/version",
+      "product creation and persistence",
+      "Chromium rendered dashboard/configuration dialog; no JavaScript errors",
+      "real browser quick/full mode editing and API persistence",
+      "diagnostic export",
+      "product editing",
+      "exit/restart restores saved data",
+      "product deletion",
+      "clean shutdown"
+    ],
+    "Windows_executed": false,
+    "live_Dell_scan": false
+  },
+  "windows_build": {
+    "arch": "amd64",
+    "subsystem": "GUI",
+    "sha256": "00f806ed3f117efaa5961cb44a17049a8670c47e45940abc26f82d9e6192654e",
+    "bytes": 7467520
+  },
+  "windows_execution": false,
+  "live_Dell_scan": false,
+  "limitations": [
+    "Representative mode does not enumerate all combinations",
+    "Linux browser model substitutes for Windows UIAutomation",
+    "Live Dell request blocked by cloud proxy"
+  ]
+}

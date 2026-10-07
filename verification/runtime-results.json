@@ -4,6 +4,7 @@
     "real Linux process startup/version",
     "product creation and persistence",
     "Chromium rendered dashboard/configuration dialog; no JavaScript errors",
+    "real browser quick/full mode editing and API persistence",
     "diagnostic export",
     "product editing",
     "exit/restart restores saved data",

@@ -34,7 +34,7 @@ func main() {
 				}
 			}
 		}
-		showError("端口被占用。请先在旧版本界面点击“退出程序”，然后打开 V8.24。没有关闭其他程序或修改数据。")
+		showError("端口被占用。请先在旧版本界面点击“退出程序”，然后打开 V8.25。没有关闭其他程序或修改数据。")
 		return
 	}
 	defer l.Close()
@@ -50,7 +50,7 @@ func main() {
 		showError(e.Error())
 		return
 	}
-	f, e := os.OpenFile(filepath.Join(*dataDir, "app_v824.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	f, e := os.OpenFile(filepath.Join(*dataDir, "app_v825.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if e == nil {
 		defer f.Close()
 		log.SetOutput(f)

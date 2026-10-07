@@ -376,6 +376,7 @@ func (b *NormalBrowser) stableWhen(ctx context.Context, p nativePage, r nativeRe
 	return p, &nativeQuoteFailure{Reason: "报价、库存或所选配置连续变化；本轮未接受报价"}
 }
 func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(string)) (Observation, error) {
+	progress("等待共用采集窗口；尚未读取商品页面")
 	select {
 	case b.gate <- struct{}{}:
 		defer func() { b.scheduleIdleLocked(); <-b.gate }()
@@ -535,7 +536,7 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 		return Observation{}, errors.New("没有成功核对本轮商品报价")
 	}
 	out.Parser = "普通浏览器自动采集（免扩展）"
-	if p.DellFamilyScan && b.scanCore && scanAllowed && customPage != nil {
+	if p.DellFamilyScan && b.scanCore && !p.quoteOnly && scanAllowed && customPage != nil {
 		if currentView != "custom" {
 			req := r
 			req.Action = "custom"
@@ -569,7 +570,17 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 				publish(current)
 			}
 		})
-		rows, partial, err := b.scanCustomCore(scanCtx, *customPage, r, progress)
+		var rows []DellResult
+		var partial bool
+		var err error
+		if p.DellScanMode == "full" {
+			rows, partial, err = b.scanCustomCore(scanCtx, *customPage, r, progress)
+			out.ScanScope = "full"
+		} else {
+			rows, partial, out.ScanCursor, err = b.scanRepresentativeCore(scanCtx, *customPage, r, p.DellScanCursor, progress)
+			out.ScanScope = "representative"
+			out.Parser = "普通浏览器：代表性实际配置（未穷举，分轮检查）"
+		}
 		if len(rows) > 0 {
 			var combined []DellResult
 			for _, row := range out.Results {
@@ -582,6 +593,9 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 		if partial || err != nil {
 			out.Partial = true
 			note := "定制核心组合未全部核对"
+			if p.DellScanMode != "full" {
+				note = "代表配置部分选项未确认（本轮未穷举）"
+			}
 			if err != nil {
 				note += "：" + nativeViewFailureNote(err)
 			}
@@ -590,11 +604,17 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 			}
 			out.Note += note
 		}
-		out.Parser += " / 核心定制组合"
+		if p.DellScanMode == "full" {
+			out.Parser += " / 核心定制组合"
+		}
 	}
 	// Historical offers are retained separately by applyLocked. Their absence
 	// alone does not make a successful current-view scan incomplete.
 	out.VerifiedNative = true
+	if p.quoteOnly {
+		out.ScanScope = "quote"
+		out.Parser = "普通报价及当前定制已更新；代表配置排队检查"
+	}
 	return out, nil
 }
 func nativeView(p nativePage) string {

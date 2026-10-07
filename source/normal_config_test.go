@@ -130,6 +130,7 @@ func TestNativeCollectReturnsToCustomBeforeFullCoreScan(t *testing.T) {
 	p := product("full-core")
 	p.URL = liveXPSURL
 	p.DellFamilyScan = true
+	p.DellScanMode = "full"
 	p.TargetPrice = 99999
 	p.MinDiscount = 100
 	o, e := b.collect(context.Background(), *p, func(string) {})

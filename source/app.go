@@ -27,23 +27,24 @@ func shortHash(s string) string { v := sha256.Sum256([]byte(s)); return hex.Enco
 func newID() string             { v := make([]byte, 12); _, _ = rand.Read(v); return hex.EncodeToString(v) }
 
 type App struct {
-	mu         sync.RWMutex
-	persistMu  sync.Mutex
-	store      Store
-	extra      map[string]json.RawMessage
-	file       string
-	ctx        context.Context
-	cancel     context.CancelFunc
-	sem        chan struct{}
-	cancels    map[string]context.CancelFunc
-	alerts     []Alert
-	alertQueue chan Alert
-	normal     *NormalBrowser
-	browser    *BrowserManager
-	client     *http.Client
-	fetch      func(context.Context, Product, func(string)) (Observation, error)
-	noDesktop  bool
-	writeError string
+	mu          sync.RWMutex
+	persistMu   sync.Mutex
+	store       Store
+	extra       map[string]json.RawMessage
+	file        string
+	ctx         context.Context
+	cancel      context.CancelFunc
+	sem         chan struct{}
+	cancels     map[string]context.CancelFunc
+	alerts      []Alert
+	alertQueue  chan Alert
+	normal      *NormalBrowser
+	browser     *BrowserManager
+	client      *http.Client
+	fetch       func(context.Context, Product, func(string)) (Observation, error)
+	noDesktop   bool
+	writeError  string
+	corePending map[string]uint64
 }
 
 func newApp(dir string, noDesktop bool) (*App, error) {
@@ -63,6 +64,7 @@ func newApp(dir string, noDesktop bool) (*App, error) {
 		return nil
 	}
 	a.store.Products = []*Product{}
+	a.corePending = make(map[string]uint64)
 	if data, e := os.ReadFile(a.file); e == nil {
 		if e = json.Unmarshal(data, &a.store); e != nil {
 			cancel()
@@ -84,6 +86,9 @@ func newApp(dir string, noDesktop bool) (*App, error) {
 		return nil, e
 	}
 	for _, p := range a.store.Products {
+		if p.DellScanMode == "" {
+			p.DellScanMode = "quick"
+		}
 		migrateDellCustomRows(p)
 		// V7.8's exclusive switch was a mistaken interpretation. Both types
 		// are always retained; each row now chooses its own alert rule.
@@ -91,6 +96,7 @@ func newApp(dir string, noDesktop bool) (*App, error) {
 		p.BrowserFeed = false
 		p.CustomDiscountOnly = false
 		p.Checking = false
+		p.CorePending = false
 		p.CheckState = ""
 		markStale(p)
 		p.LastTrusted = false
@@ -259,7 +265,20 @@ func failureStatusText(detail, needsAction string) string {
 	return detail
 }
 func (a *App) schedule(id string) bool {
-	return a.scheduleWith(id, a.fetch)
+	return a.scheduleWith(id, func(ctx context.Context, p Product, progress func(string)) (Observation, error) {
+		staged := a.normal.available && a.normal.scanCore && p.DellFamilyScan && dellPlatform(p.URL) != ""
+		p.quoteOnly = staged
+		o, err := a.fetch(ctx, p, progress)
+		if staged && err == nil && !o.Partial && ctx.Err() == nil {
+			a.mu.Lock()
+			if current := a.findLocked(p.ID); current != nil && current.revision == p.revision {
+				a.corePending[p.ID] = p.revision
+				current.CorePending = true
+			}
+			a.mu.Unlock()
+		}
+		return o, err
+	})
 }
 func (a *App) scheduleWith(id string, fetch func(context.Context, Product, func(string)) (Observation, error)) bool {
 	a.mu.Lock()
@@ -268,6 +287,8 @@ func (a *App) scheduleWith(id string, fetch func(context.Context, Product, func(
 		a.mu.Unlock()
 		return false
 	}
+	delete(a.corePending, id)
+	p.CorePending = false
 	snapshot := *p
 	snapshot.History = nil
 	snapshot.DellResults = append([]DellResult(nil), p.DellResults...)
@@ -288,6 +309,9 @@ func (a *App) scheduleWith(id string, fetch func(context.Context, Product, func(
 	a.mu.Unlock()
 	go func() {
 		defer cancel()
+		// Runs after this goroutine releases the fetch semaphore. Core work
+		// never monopolizes a slot while other products need their first quote.
+		defer a.dispatchPendingCore()
 		var o Observation
 		var e error
 		select {
@@ -324,6 +348,8 @@ func (a *App) scheduleWith(id string, fetch func(context.Context, Product, func(
 		p.CheckSeq++
 		p.nextCheck = time.Now().Add(time.Duration(p.IntervalMin * float64(time.Minute)))
 		if e != nil {
+			delete(a.corePending, id)
+			p.CorePending = false
 			if errors.Is(e, context.DeadlineExceeded) {
 				p.LastError = "检查超时，已结束本轮；保留上次数据"
 			} else if errors.Is(e, context.Canceled) {
@@ -432,6 +458,12 @@ func (a *App) applyLocked(p *Product, o Observation) {
 	p.Stale = false
 	p.LastTrusted = true
 	p.ScanIncomplete = o.Partial
+	if o.ScanScope != "" {
+		p.ScanScope = o.ScanScope
+	}
+	if o.ScanScope == "representative" {
+		p.DellScanCursor = o.ScanCursor
+	}
 	if o.Partial {
 		p.LastError = "本轮扫描未完整完成；未覆盖的配置已标记为上次结果。" + o.Note
 		p.NeedsAction = actionForFailure(p.URL, o.Note)
@@ -578,6 +610,7 @@ func (a *App) start() {
 				for _, id := range ids {
 					a.schedule(id)
 				}
+				a.dispatchPendingCore()
 			}
 		}
 	}()

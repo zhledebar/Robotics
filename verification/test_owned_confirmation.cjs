@@ -90,4 +90,4 @@ for(const action of ['ordinary','custom']){
 }
 openModal(product,'ordinary',()=>{});rejects({url,family:true,action:'custom'});modal=null;
 const report={status:'PASS',unsigned_zero_graphics_confirmed:true,wrong_graphics_name_rejected:true,confirmed_combinations:combinations,selection_confirmation_count:confirmations,modal_linked_to_requested_option:true,old_selection_not_accepted_before_confirmation:true,view_reset_confirmation_model:true,unbound_modal_rejected:true,covered_button_rejected:true,purchase_button_rejected:true,duplicate_confirmation_rejected:true,wrong_model_rejected:true,external_Dell_scan:false,Windows_UIAutomation_executed:false};
-fs.writeFileSync(__dirname+'/confirmation_v824.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+fs.writeFileSync(__dirname+'/confirmation_v825.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));

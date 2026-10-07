@@ -30,6 +30,6 @@ env.results=rows;vm.runInContext('api=async()=>({json:async()=>results})',env);
  await vm.runInContext("dellView('xps')",env);assert(element('dr').innerHTML.includes('暂无可显示结果'));
  env.product={...base,url:'https://www.lenovo.com/us/vipmembers/perksoffer/en/p/test/len123',lenovo_results:[{...custom,offer_id:'cto',stock:'未确认',confirmed:false}]};
  assert.equal(vm.runInContext('modelRows(product).length',env),1);
- const report={legacy_BYO_hidden:true,status:'PASS',version:'V8.24',cases:['availability matrix','dashboard counts','discount unpublished visible','detail dialog filtering','stale custom hidden','empty message','Lenovo unchanged'],actual_browser_run:false};
- fs.writeFileSync(__dirname+'/display_v824.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+ const report={legacy_BYO_hidden:true,status:'PASS',version:'V8.25',cases:['availability matrix','dashboard counts','discount unpublished visible','detail dialog filtering','stale custom hidden','empty message','Lenovo unchanged'],actual_browser_run:false};
+ fs.writeFileSync(__dirname+'/display_v825.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 })().catch(e=>{console.error(e);process.exit(1)});

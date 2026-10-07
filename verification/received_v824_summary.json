@@ -1,0 +1,14 @@
+{
+  "export_time": "2026-10-07 18:56:33",
+  "current_custom_visible": 64,
+  "current_custom_hidden": 43,
+  "hidden_reasons": {
+    "上次结果": 43
+  },
+  "confirmed_fresh_custom_states": 64,
+  "known": {
+    "shared_window_blocks_other_Dell": true,
+    "CPU_dependency_modals_accepted": true,
+    "six_memory_transitions_unconfirmed": true
+  }
+}

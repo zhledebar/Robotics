@@ -2,7 +2,7 @@ import json, subprocess, tempfile, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-root = Path('/workspace/PriceStockMonitor_V8.24/verification')
+root = Path(__file__).resolve().parent
 data = Path(tempfile.mkdtemp(prefix='runtime-', dir=root))
 checks = []
 def launch():
@@ -22,7 +22,7 @@ def stop(p,url):
 
 p,url=launch()
 try:
-    assert json.load(request(url,'api/version'))['version']=='V8.24'
+    assert json.load(request(url,'api/version'))['version']=='V8.25'
     checks.append('real Linux process startup/version')
     product={'name':'Dell XPS 16 test', 'url':'https://www.dell.com/en-us/shop/laptop-computers/spd/xps16da16260/da16260_reg_01','interval_min':10,'cooldown_min':30,'min_discount':10,'active':False,'dell_family_scan':True}
     saved=json.load(request(url,'api/save',product)); assert saved['ok']
@@ -40,10 +40,20 @@ try:
         page.screenshot(path=str(root/'ui-empty-xps.png'),full_page=True)
         assert not errors,errors
         checks.append('Chromium rendered dashboard/configuration dialog; no JavaScript errors')
+        page.evaluate('(id)=>edit(id)',pid)
+        assert page.locator('#ds').input_value()=='quick'
+        page.locator('#ds').select_option('full')
+        page.evaluate('saveProduct()')
+        assert json.load(request(url,'api/products'))[0]['dell_scan_mode']=='full'
+        page.evaluate('(id)=>edit(id)',pid)
+        page.locator('#ds').select_option('quick')
+        page.evaluate('saveProduct()')
+        assert json.load(request(url,'api/products'))[0]['dell_scan_mode']=='quick'
+        checks.append('real browser quick/full mode editing and API persistence')
         browser.close()
     response=request(url,'api/diagnostics')
-    assert 'V8.24.txt' in response.headers['Content-Disposition']
-    assert 'V8.24 started' in response.read().decode()
+    assert 'V8.25.txt' in response.headers['Content-Disposition']
+    assert 'V8.25 started' in response.read().decode()
     checks.append('diagnostic export')
     product['name']='Dell XPS 16 edited';json.load(request(url,'api/save',product))
     assert json.load(request(url,'api/products'))[0]['name']==product['name']

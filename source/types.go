@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const version = "V8.24"
+const version = "V8.25"
 const stockIn = "有货"
 const stockOut = "缺货"
 const stockUnknown = "未确认"
@@ -61,6 +61,10 @@ type Product struct {
 	AlertOnPriceDrop        bool                       `json:"alert_on_price_drop"`
 	Active                  bool                       `json:"active"`
 	DellFamilyScan          bool                       `json:"dell_family_scan"`
+	DellScanMode            string                     `json:"dell_scan_mode,omitempty"`
+	DellScanCursor          int                        `json:"dell_scan_cursor,omitempty"`
+	ScanScope               string                     `json:"scan_scope,omitempty"`
+	CorePending             bool                       `json:"core_pending,omitempty"`
 	LastPrice               float64                    `json:"last_price"`
 	LastOriginal            float64                    `json:"last_original"`
 	LastDiscount            float64                    `json:"last_discount"`
@@ -85,6 +89,8 @@ type Product struct {
 	Extra                   map[string]json.RawMessage `json:"-"`
 	revision                uint64
 	nextCheck               time.Time
+	quoteOnly               bool
+	corePhase               bool
 }
 
 // Keep fields introduced by earlier versions, even if this version does not use them.
@@ -139,6 +145,8 @@ type Alert struct {
 	Acknowledged bool   `json:"acknowledged"`
 }
 type Observation struct {
+	ScanScope      string
+	ScanCursor     int
 	VerifiedNative bool
 
 	Price    float64
