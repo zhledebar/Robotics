@@ -111,11 +111,11 @@ func TestNativeContentProbeCannotTurnDOMReadinessIntoSuccess(t *testing.T) {
 
 func TestNativeContentStatusRejectsNavigationAndDiscardsQuoteFields(t *testing.T) {
 	p := nativePage{URL: liveXPSURL}
-	status, err := verifyOwnedContentStatus(p, `{"url":"`+liveXPSURL+`","readyState":"complete","price":100,"stock":"有货","confirmed":true}`)
+	status, err := verifyOwnedContentStatus(p, `{"url":"`+liveXPSURL+`?variant=selected#configuration","readyState":"complete","price":100,"stock":"有货","confirmed":true}`)
 	if err != nil || strings.Contains(status, "price") || strings.Contains(status, "stock") || strings.Contains(status, "confirmed") {
 		t.Fatalf("diagnostic leaked quote: %s %v", status, err)
 	}
-	if _, err = verifyOwnedContentStatus(p, `{"url":"https://example.com","readyState":"complete"}`); err == nil {
+	if _, err = verifyOwnedContentStatus(p, `{"url":"https://www.dell.com/en-us/shop/laptop-computers/spd/dellpro16laptoppc16250/pc16250_fixed_22","readyState":"complete"}`); err == nil {
 		t.Fatal("wrong document diagnosed as owned page")
 	}
 }

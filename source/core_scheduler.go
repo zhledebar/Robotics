@@ -20,12 +20,24 @@ func (a *App) dispatchPendingCore() {
 		}
 	}
 	id := ""
-	for _, p := range a.store.Products {
+	products := a.store.Products
+	start := 0
+	for i, p := range products {
+		if p.ID == a.coreLastID && len(products) > 0 {
+			start = (i + 1) % len(products)
+			break
+		}
+	}
+	// Rotate across products with outstanding configuration work. Otherwise
+	// a long-running XPS scan at the top of the product list can starve Pro.
+	for offset := 0; offset < len(products); offset++ {
+		p := products[(start+offset)%len(products)]
 		if revision, ok := a.corePending[p.ID]; ok {
 			delete(a.corePending, p.ID)
 			p.CorePending = false
 			if revision == p.revision && p.NeedsAction == "" {
 				id = p.ID
+				a.coreLastID = id
 				break
 			}
 		}

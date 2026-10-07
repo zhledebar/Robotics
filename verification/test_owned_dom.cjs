@@ -175,6 +175,6 @@ let navigated=false;try{contentDiagnostic('https://example.com')}catch(e){naviga
 if(!navigated)throw Error('foreign document diagnosed');
 if(['price','stock','confirmed','configuration'].some(k=>k in d))throw Error('diagnostic returned product evidence');
 const report={read_only_loading_diagnostics:true,content_status_visibility:true,diagnostic_excludes_quote_and_stock:true,unsigned_zero_graphics_identity:true,browser_input_model:true,page_script_click_rejected:true,covered_option_rejected:true,collapsed_option_rejected:true,accordion_expansion_verified:true,status:'PASS',fixture:'captured Dell HTML parsed into an in-memory DOM model',confirmed_combinations:count,hidden_sticky_cart_hero_total_used:true,duplicate_same_amount_accepted:true,conflicting_current_totals_rejected:true,all_hidden_totals_rejected:true,scoped_price_diagnostics:true,monthly_price_excluded:true,loading_visibility_regressions:true,loading_completion_recovered:true,missing_total_rejected:true,stale_click_state_preserved:true,non_core_action_rejected:true,wrong_model_rejected:true,external_Dell_scan:false};
-fs.writeFileSync(__dirname+'/dom_v826.json',JSON.stringify(report,null,2));
-fs.writeFileSync(__dirname+'/dom_snapshot_v826.json',JSON.stringify(initial));
+fs.writeFileSync(__dirname+'/dom_v827.json',JSON.stringify(report,null,2));
+fs.writeFileSync(__dirname+'/dom_snapshot_v827.json',JSON.stringify(initial));
 console.log(JSON.stringify(report));

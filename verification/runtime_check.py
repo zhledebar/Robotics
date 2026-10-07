@@ -22,7 +22,7 @@ def stop(p,url):
 
 p,url=launch()
 try:
-    assert json.load(request(url,'api/version'))['version']=='V8.26'
+    assert json.load(request(url,'api/version'))['version']=='V8.27'
     checks.append('real Linux process startup/version')
     product={'name':'Dell XPS 16 test', 'url':'https://www.dell.com/en-us/shop/laptop-computers/spd/xps16da16260/da16260_reg_01','interval_min':10,'cooldown_min':30,'min_discount':10,'active':False,'dell_family_scan':True}
     saved=json.load(request(url,'api/save',product)); assert saved['ok']
@@ -52,8 +52,8 @@ try:
         checks.append('real browser quick/full mode editing and API persistence')
         browser.close()
     response=request(url,'api/diagnostics')
-    assert 'V8.26.txt' in response.headers['Content-Disposition']
-    assert 'V8.26 started' in response.read().decode()
+    assert 'V8.27.txt' in response.headers['Content-Disposition']
+    assert 'V8.27 started' in response.read().decode()
     checks.append('diagnostic export')
     product['name']='Dell XPS 16 edited';json.load(request(url,'api/save',product))
     assert json.load(request(url,'api/products'))[0]['name']==product['name']

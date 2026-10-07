@@ -471,15 +471,28 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 		cp := page
 		customPage = &cp
 	}
+	if p.corePhase && firstErr == nil && currentView == "custom" {
+		out.CoreOnly = true
+	}
 	if p.DellFamilyScan {
 		action := ""
-		if page.CanOrdinary {
+		if p.corePhase {
+			// A representative slice only needs the configurator. Switching to
+			// ordinary offers and back adds two expensive page waits.
+			if currentView != "custom" && page.CanCustom {
+				action = "custom"
+			}
+		} else if page.CanOrdinary {
 			action = "ordinary"
 		} else if page.CanCustom {
 			action = "custom"
 		}
 		if action != "" {
-			progress("自动读取普通配置与定制款；随后核对核心配置组合")
+			if p.corePhase {
+				progress("进入定制配置；核对一项代表配置")
+			} else {
+				progress("自动读取普通配置与定制款；随后核对核心配置组合")
+			}
 			r.Action = action
 			other, err := b.request(ctx, r)
 			if err == nil {
@@ -511,6 +524,15 @@ func (b *NormalBrowser) collect(ctx context.Context, p Product, progress func(st
 				if nativeView(page) == nativeView(other) {
 					out.Partial = true
 					out.Note = "普通浏览器自动采集失败：配置入口未完成视图切换；未覆盖配置保留为上次数据"
+				} else if p.corePhase {
+					if nativeView(other) != "custom" {
+						out.Partial = true
+						out.Note = "代表配置检查未进入定制配置页面；下轮重新检查"
+					} else {
+						out = second
+						out.CoreOnly = true
+						customPage = &other
+					}
 				} else {
 					if firstErr != nil {
 						out = second

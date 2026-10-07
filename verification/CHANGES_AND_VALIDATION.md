@@ -1,24 +1,17 @@
-# PriceStockMonitor V8.26
+# PriceStockMonitor V8.27
 
-V8.25 诊断显示，XPS 普通报价更新后，六次配置切换连续占用了采集窗口；Dell Pro 到期报价要等这一整批结束。本版将代表配置检查拆成单次切换：确认弹窗、记录实际联动配置后立即归还窗口；若有报价到期，先读取报价，再继续 XPS 下一项。
+V8.26's diagnostic showed that Dell 16 Pro still had a pending configuration scan while XPS 16 repeatedly occupied the shared browser collector. XPS configuration passes also switched to the ordinary offers view and back before checking one representative choice.
 
-- 默认快速代表配置，每次只做一次选项切换。弹窗联动后的实际 CPU、显卡、内存、硬盘、屏幕、价格和库存核对并去重。
-- 配置检查在未穷举时轮换候选项，仍明确显示“未穷举”。需要完整遍历时可在商品编辑页选“完整遍历（较慢）”。
-- 初始报价阶段仍先完成全部商品的普通报价与当前定制，才开始抽查其他选项。
-- 保留读取组件缓存、未确认分支处理、库存绑定检查与扫描结果渐进展示。
+V8.27 rotates pending configuration work across products. Each XPS representative pass stays on the custom configurator, verifies one coupled selection and its current quote, then yields the shared collector. A core-only observation preserves the ordinary quote and ordinary offer rows. Diagnostic exports now include each ordinary Dell offer's parsed component fields, price, stock, URL and freshness so blank fields can be traced.
 
-## 本地验证
+## Validation
 
-- Go 全量回归：334 通过、1 跳过、0 失败。跳过项需要额外捕获页面。
-- Chromium 本地 Dell 页面模型运行生产配置遍历与弹窗确认代码：一次选项切换、一次弹窗确认、一次联动，记录两个经过核对的实际配置。
-- 新增调度回归：XPS 下一项待检查时若 Dell Pro 报价到期，先安排 Pro 报价，再继续核心配置抽查。
-- 新增代码的 race 检查、Linux/Windows `go vet`、Windows amd64 GUI 交叉构建通过。
-- Linux 实际应用和 Chromium 界面：报价配置模式编辑保存、诊断导出、商品增删改、退出重启恢复通过。三组 Node 页面模型检查通过。
+- Full Go suite with local Chromium integration: 337 passed, 1 skipped, 0 failed. The skipped test requires an additional captured page.
+- Chromium ran the production `collect` path against a local XPS DOM model: zero ordinary-view switches, one real browser selection, one coupled-change confirmation, two verified result rows.
+- Targeted race run for scheduler rotation, quote priority, core-only application and Chromium traversal passed.
+- `go vet ./...`, Linux process/UI/runtime checks and four Node page-model checks passed.
+- Windows amd64 GUI executable cross-compiled successfully.
 
-云环境为 Linux；没有执行 Windows UIAutomation/PowerShell，也没有连接真实 Dell 商品页（云代理拒绝该请求）。本地模型测试不能证明 Windows 实机及 Dell 页面已完全可用。
+This Linux cloud environment cannot run Windows UIAutomation/PowerShell. Requests to the live Dell product pages are blocked by the network proxy, and the supplied V8.26 diagnostic shows the Pro configuration scan was still pending. Thus scheduler fairness and XPS traversal were locally tested, but Dell 16 Pro's live component extraction remains unverified. See `verification_v827.json`, `go-tests-v827.jsonl`, and `coupled-browser-v827.log` for evidence.
 
-## 安装
-
-在旧版界面点击“退出程序”，解压 Windows ZIP 并运行 PriceStockMonitor_Win64_V8.26.exe。原设置和历史沿用。程序会保存当前设置。
-
-详细证据见 verification/verification_v826.json、verification/go-tests-v826.jsonl 和 verification/coupled-browser-v826.log。V8.25 的历史验证记录保留供对照。
+Install by exiting the previous version, extracting the Windows ZIP and launching `PriceStockMonitor_Win64_V8.27.exe`. Existing products and history are preserved.

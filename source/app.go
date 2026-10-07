@@ -45,6 +45,7 @@ type App struct {
 	noDesktop   bool
 	writeError  string
 	corePending map[string]uint64
+	coreLastID  string
 }
 
 func newApp(dir string, noDesktop bool) (*App, error) {
@@ -388,6 +389,17 @@ func (a *App) applyLocked(p *Product, o Observation) {
 	previous.DellResults = append([]DellResult(nil), p.DellResults...)
 	previous.LenovoResults = append([]DellResult(nil), p.LenovoResults...)
 	if len(o.Results) > 0 {
+		if o.CoreOnly {
+			known := make(map[string]bool, len(o.Results))
+			for _, row := range o.Results {
+				known[row.OfferID] = true
+			}
+			for _, row := range p.DellResults {
+				if !dellResultIsCustom(row) && !known[row.OfferID] {
+					o.Results = append(o.Results, row)
+				}
+			}
+		}
 		for i := range o.Results {
 			o.Results[i].Matched = matches(p, o.Results[i])
 		}
@@ -441,6 +453,11 @@ func (a *App) applyLocked(p *Product, o Observation) {
 			o.Discount = selected.Discount
 			o.Stock = selected.Stock
 		}
+	}
+	if o.CoreOnly {
+		// A core-only pass refreshes configurations, not the ordinary product
+		// quote already committed by the quote-priority phase.
+		o.Price, o.Original, o.Discount, o.Stock, o.Parser = previous.LastPrice, previous.LastOriginal, previous.LastDiscount, previous.LastStock, previous.LastParser
 	}
 	p.LastPrice = o.Price
 	p.LastOriginal = o.Original

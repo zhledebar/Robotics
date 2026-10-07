@@ -1,0 +1,31 @@
+{
+  "version": "V8.27",
+  "date": "2026-10-07",
+  "diagnostic_findings": {
+    "dell_16_pro": "The V8.26 export showed its configuration scan pending; screenshot rows had prices but empty component fields.",
+    "dell_xps_16": "Each representative pass toggled ordinary and custom views before one configuration transition; the product list repeatedly selected XPS first."
+  },
+  "changes": [
+    "Rotate pending configuration scans across products.",
+    "Run XPS representative configuration passes directly on the custom page, skipping ordinary/custom view switches.",
+    "Preserve the latest ordinary quote and ordinary Dell offer rows while applying core-only observations.",
+    "Export ordinary Dell offer fields, prices, stock and page freshness in diagnostics.",
+    "Treat harmless URL query/fragment changes on the same Dell model as the same page in read-only loading diagnostics."
+  ],
+  "validation": {
+    "go_tests": {
+      "passed": 337,
+      "skipped": 1,
+      "failed": 0,
+      "chromium_integration": "passed"
+    },
+    "targeted_race": "passed",
+    "go_vet": "passed",
+    "node_page_models": "4 passed",
+    "linux_runtime": "passed",
+    "windows_amd64_gui_build": "passed",
+    "live_dell_page": "not run; proxy blocked requests",
+    "windows_uia": "not run; environment is Linux"
+  },
+  "limitations": "The supplied V8.26 diagnostics show Pro specifications were blank before its configuration scan ran. The cloud environment cannot execute Windows UIAutomation or access the live Dell page, so Pro live component extraction is not claimed as verified."
+}

@@ -181,16 +181,19 @@ func TestDiagnosticDownloadIncludesCurrentSelectionFailureAndBoundedLog(t *testi
 	a := testApp(t)
 	p := product("diagnostic")
 	p.LastError = "核心选项切换未确认（处理器）"
+	p.DellFamilyScan = true
+	p.LastParser = "普通浏览器：预配置"
+	p.DellResults = []DellResult{{OfferID: "pc16250_fixed_18", Source: "普通浏览器：预配置", CPU: "Intel Core 5", GPU: "Intel Graphics", Memory: "16 GB", Storage: "512 GB SSD", Display: "FHD", Price: 1690, Confirmed: true, Stock: stockIn}}
 	a.store.Products = append(a.store.Products, p)
 	log := strings.Repeat("x", 2*1024*1024+100) + "\nowned core click wanted-id=CPU-B selected-ids=CPU-A\n"
-	if err := os.WriteFile(filepath.Join(filepath.Dir(a.file), "app_v826.log"), []byte(log), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(filepath.Dir(a.file), "app_v827.log"), []byte(log), 0600); err != nil {
 		t.Fatal(err)
 	}
 	req := httptest.NewRequest("GET", "http://127.0.0.1:38840/api/diagnostics", nil)
 	w := httptest.NewRecorder()
 	a.handler().ServeHTTP(w, req)
-	if w.Code != 200 || !strings.Contains(w.Header().Get("Content-Disposition"), "attachment") || !strings.Contains(w.Body.String(), "核心选项切换未确认") || !strings.Contains(w.Body.String(), "wanted-id=CPU-B") || w.Body.Len() > 2*1024*1024+4096 {
-		t.Fatal("diagnostic missing failure or unbounded")
+	if w.Code != 200 || !strings.Contains(w.Header().Get("Content-Disposition"), "attachment") || !strings.Contains(w.Body.String(), "核心选项切换未确认") || !strings.Contains(w.Body.String(), "wanted-id=CPU-B") || !strings.Contains(w.Body.String(), `"dell_family_scan": true`) || !strings.Contains(w.Body.String(), `"dell_offer_rows"`) || !strings.Contains(w.Body.String(), `"cpu": "Intel Core 5"`) || !strings.Contains(w.Body.String(), `"price": 1690`) || w.Body.Len() > 2*1024*1024+4096 {
+		t.Fatalf("diagnostic missing failure or unbounded: code=%d rows=%t cpu=%t price=%t bytes=%d", w.Code, strings.Contains(w.Body.String(), `"dell_offer_rows"`), strings.Contains(w.Body.String(), `"cpu":"Intel Core 5"`), strings.Contains(w.Body.String(), `"price":1690`), w.Body.Len())
 	}
 	req.Header.Set("Origin", "https://example.com")
 	w = httptest.NewRecorder()

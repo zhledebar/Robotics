@@ -40,7 +40,7 @@ func (a *App) handler() http.Handler {
 	})
 	mux.HandleFunc("/api/diagnostics", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.26.txt"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="PriceStockMonitor_diagnostics_V8.27.txt"`)
 		w.Header().Set("Cache-Control", "no-store")
 		fmt.Fprintf(w, "商品监控诊断 %s\n导出时间：%s\n\n", version, stamp())
 		a.mu.RLock()
@@ -49,6 +49,7 @@ func (a *App) handler() http.Handler {
 			visibleCustom, hiddenCustom := 0, 0
 			hiddenReasons := map[string]int{}
 			var customRows []map[string]any
+			var offerRows []map[string]any
 			if siteName(p.URL) == "dell" {
 				for _, row := range p.DellResults {
 					if dellResultIsCustom(row) {
@@ -71,15 +72,17 @@ func (a *App) handler() http.Handler {
 							hiddenReasons[reason]++
 						}
 						customRows = append(customRows, map[string]any{"offer_id": row.OfferID, "price": row.Price, "stock": row.Stock, "confirmed": row.Confirmed, "stale": row.Stale, "options": row.Options, "note": row.Note})
+					} else {
+						offerRows = append(offerRows, map[string]any{"offer_id": row.OfferID, "source": row.Source, "cpu": row.CPU, "gpu": row.GPU, "memory": row.Memory, "storage": row.Storage, "display": row.Display, "price": row.Price, "original": row.Original, "discount": row.Discount, "stock": row.Stock, "confirmed": row.Confirmed, "stale": row.Stale, "url": row.URL})
 					}
 				}
 			}
-			checks = append(checks, map[string]any{"name": p.Name, "last_checked": p.LastChecked, "stage": p.CheckState, "last_error": p.LastError, "needs_action": p.NeedsAction, "scan_incomplete": p.ScanIncomplete, "stale": p.Stale, "dell_custom_visible": visibleCustom, "dell_custom_hidden": hiddenCustom, "dell_custom_hidden_reasons": hiddenReasons, "dell_custom_rows": customRows, "scan_scope": p.ScanScope, "core_pending": p.CorePending, "dell_scan_mode": p.DellScanMode, "next_scan_cursor": p.DellScanCursor})
+			checks = append(checks, map[string]any{"name": p.Name, "last_checked": p.LastChecked, "stage": p.CheckState, "last_error": p.LastError, "needs_action": p.NeedsAction, "scan_incomplete": p.ScanIncomplete, "stale": p.Stale, "dell_family_scan": p.DellFamilyScan, "dell_platform": dellPlatform(p.URL), "last_parser": p.LastParser, "dell_offer_rows": offerRows, "dell_custom_visible": visibleCustom, "dell_custom_hidden": hiddenCustom, "dell_custom_hidden_reasons": hiddenReasons, "dell_custom_rows": customRows, "scan_scope": p.ScanScope, "core_pending": p.CorePending, "dell_scan_mode": p.DellScanMode, "next_scan_cursor": p.DellScanCursor})
 		}
 		meta, _ := json.MarshalIndent(checks, "", "  ")
 		a.mu.RUnlock()
 		fmt.Fprintf(w, "当前检查状态：\n%s\n\n本次版本日志（末尾最多2 MiB）：\n", meta)
-		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v826.log"))
+		f, err := os.Open(filepath.Join(filepath.Dir(a.file), "app_v827.log"))
 		if err != nil {
 			fmt.Fprintln(w, "本次运行尚无可读取日志。请完成一次检查后再次下载诊断。")
 			return

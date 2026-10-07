@@ -76,6 +76,9 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 	b.pollDelay = 10 * time.Millisecond
 	b.selectionStallBudget = time.Second
 	b.call = func(callCtx context.Context, req nativeRequest) (nativePage, error) {
+		if req.Action == "ordinary" {
+			return nativePage{}, fmt.Errorf("core-only pass unexpectedly switched to ordinary view")
+		}
 		if req.Action == "select" || req.Action == "expand" || req.Action == "collapse" {
 			if e := ownedDOMOperation(callCtx, c, req); e != nil {
 				return nativePage{}, e
@@ -93,13 +96,12 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 		}
 		return read(callCtx)
 	}
-	initial, err := read(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rows, partial, cursor, more, err := b.scanRepresentativeCore(ctx, initial, r, 0, func(string) {})
-	if err != nil || partial || len(rows) != 2 || cursor == 0 || !more {
-		t.Fatalf("rows=%d partial=%v cursor=%d more=%t err=%v", len(rows), partial, cursor, more, err)
+	p := *product("chromium-core")
+	p.URL, p.DellFamilyScan, p.corePhase = liveXPSURL, true, true
+	o, err := b.collect(ctx, p, func(string) {})
+	rows := o.Results
+	if err != nil || o.Partial || !o.CoreOnly || o.ScanScope != "representative" || len(rows) != 2 || o.ScanCursor == 0 || !o.CorePending {
+		t.Fatalf("core_only=%t scope=%s rows=%d partial=%v cursor=%d more=%t err=%v", o.CoreOnly, o.ScanScope, len(rows), o.Partial, o.ScanCursor, o.CorePending, err)
 	}
 	raw, err := c.eval(ctx, `JSON.stringify({selections:window.selectionClicks,confirmations:window.confirmationClicks,coupled:window.coupledChanges})`)
 	if err != nil {
@@ -119,5 +121,5 @@ func TestChromiumCoupledRepresentativeTraversal(t *testing.T) {
 		}
 		seen[row.OfferID] = true
 	}
-	t.Logf("production traversal + Chromium: actual_rows=%d selected=%d accepted_popups=%d coupled_changes=%d pending_more=%t", len(rows), stats.Selections, stats.Confirmations, stats.Coupled, more)
+	t.Logf("production collect + Chromium: core_only=%t ordinary_switch=0 actual_rows=%d selected=%d accepted_popups=%d coupled_changes=%d pending_more=%t", o.CoreOnly, len(rows), stats.Selections, stats.Confirmations, stats.Coupled, o.CorePending)
 }

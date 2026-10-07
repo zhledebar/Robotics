@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "unsigned_zero_graphics_confirmed": true,
+  "wrong_graphics_name_rejected": true,
+  "confirmed_combinations": 40,
+  "selection_confirmation_count": 63,
+  "modal_linked_to_requested_option": true,
+  "old_selection_not_accepted_before_confirmation": true,
+  "view_reset_confirmation_model": true,
+  "unbound_modal_rejected": true,
+  "covered_button_rejected": true,
+  "purchase_button_rejected": true,
+  "duplicate_confirmation_rejected": true,
+  "wrong_model_rejected": true,
+  "external_Dell_scan": false,
+  "Windows_UIAutomation_executed": false
+}

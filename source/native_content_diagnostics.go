@@ -61,7 +61,7 @@ func verifyOwnedContentStatus(p nativePage, raw string) (string, error) {
 			Visible bool `json:"visible"`
 		} `json:"regions"`
 	}
-	if len(raw) > 4096 || json.Unmarshal([]byte(raw), &status) != nil || status.URL != p.URL {
+	if len(raw) > 4096 || json.Unmarshal([]byte(raw), &status) != nil || !normalURLMatches(p.URL, status.URL, true) {
 		return "", fmt.Errorf("后台商品加载诊断未对应当前网址")
 	}
 	// Marshal only the diagnostic schema, discarding any unexpected fields.
